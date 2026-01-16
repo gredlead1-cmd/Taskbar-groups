@@ -957,10 +957,8 @@ namespace client.Forms
                     string absolutePath = Path.Combine(MainPath.path, "config", Category.Name, shortcut.CustomIconPath);
                     if (File.Exists(absolutePath))
                     {
-                        using (MemoryStream ms = new MemoryStream(System.IO.File.ReadAllBytes(absolutePath)))
-                        {
-                            picCustomIconPreview.Image = Image.FromStream(ms);
-                        }
+                        // Load image directly from file to avoid stream disposal issues
+                        picCustomIconPreview.Image = new Bitmap(absolutePath);
                         cmdRemoveIcon.Enabled = true;
                     }
                     else

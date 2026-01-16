@@ -48,25 +48,8 @@ namespace client.User_controls
             txtShortcutName.Width = size.Width;
             txtShortcutName.Height = size.Height;
 
-            // Check for custom icon first
-            if (!string.IsNullOrEmpty(Shortcut.CustomIconPath))
-            {
-                Bitmap customIcon = LoadCustomIcon(Shortcut.CustomIconPath);
-                if (customIcon != null)
-                {
-                    picShortcut.BackgroundImage = logo = customIcon;
-                }
-                else
-                {
-                    // Custom icon path set but file missing, fall back to default
-                    LoadDefaultIcon();
-                }
-            }
-            else
-            {
-                // No custom icon, load default
-                LoadDefaultIcon();
-            }
+            // Load icon (custom or default)
+            LoadIconImage();
 
             if (Position == 0)
             {
@@ -202,8 +185,8 @@ namespace client.User_controls
                 string absolutePath = GetAbsoluteIconPath(customPath);
                 if (File.Exists(absolutePath))
                 {
-                    using (MemoryStream ms = new MemoryStream(System.IO.File.ReadAllBytes(absolutePath)))
-                        return new Bitmap(ms);
+                    // Load image directly from file to avoid stream disposal issues
+                    return new Bitmap(absolutePath);
                 }
             }
             catch (Exception)
@@ -269,6 +252,12 @@ namespace client.User_controls
 
         // Public method to refresh icon display on-demand
         public void RefreshIcon()
+        {
+            LoadIconImage();
+        }
+
+        // Helper method to load icon (custom or default)
+        private void LoadIconImage()
         {
             if (!string.IsNullOrEmpty(Shortcut.CustomIconPath))
             {
