@@ -218,9 +218,9 @@ namespace client.Classes
                 try
                 {
                     string customIconAbsolutePath = Path.Combine(MainPath.path, "config", this.Name, shortcutObject.CustomIconPath);
-                    if (System.IO.File.Exists(customIconAbsolutePath))
+                    if (File.Exists(customIconAbsolutePath))
                     {
-                        using (MemoryStream ms = new MemoryStream(System.IO.File.ReadAllBytes(customIconAbsolutePath)))
+                        using (MemoryStream ms = new MemoryStream(File.ReadAllBytes(customIconAbsolutePath)))
                         {
                             using (Image tempImage = Image.FromStream(ms))
                             {

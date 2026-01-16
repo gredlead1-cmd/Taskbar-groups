@@ -185,7 +185,8 @@ namespace client.User_controls
                 string absolutePath = GetAbsoluteIconPath(customPath);
                 if (File.Exists(absolutePath))
                 {
-                    // Load image directly from file to avoid stream disposal issues
+                    // Load image directly from file - this creates a new Bitmap that owns its data
+                    // and doesn't depend on an external stream
                     return new Bitmap(absolutePath);
                 }
             }

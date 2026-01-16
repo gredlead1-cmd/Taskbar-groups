@@ -952,6 +952,13 @@ namespace client.Forms
 
             ProgramShortcut shortcut = Category.ShortcutList[selectedShortcut.Position];
 
+            // Dispose old image to prevent memory leaks
+            if (picCustomIconPreview.Image != null)
+            {
+                picCustomIconPreview.Image.Dispose();
+                picCustomIconPreview.Image = null;
+            }
+
             if (!string.IsNullOrEmpty(shortcut.CustomIconPath))
             {
                 try
