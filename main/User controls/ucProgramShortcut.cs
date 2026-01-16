@@ -1,10 +1,9 @@
-﻿using System;
+using System;
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 using client.Classes;
 using client.Forms;
-using System.IO;
-using System.Windows.Input;
 
 namespace client.User_controls
 {
@@ -16,7 +15,9 @@ namespace client.User_controls
         public bool IsSelected = false;
         public int Position { get; set; }
 
+        // Current icon bitmap owned by this control (must be disposed when replaced)
         public Bitmap logo;
+
         public ucProgramShortcut()
         {
             InitializeComponent();
@@ -24,12 +25,11 @@ namespace client.User_controls
 
         private void ucProgramShortcut_Load(object sender, EventArgs e)
         {
-            // Grab the file name without the extension to be used later as the naming scheme for the icon .jpg image
-
             if (Shortcut.isWindowsApp)
             {
                 txtShortcutName.Text = handleWindowsApp.findWindowsAppsName(Shortcut.FilePath);
-            } else if (Shortcut.name == "")
+            }
+            else if (Shortcut.name == "")
             {
                 if (File.Exists(Shortcut.FilePath) && Path.GetExtension(Shortcut.FilePath).ToLower() == ".lnk")
                 {
@@ -39,7 +39,8 @@ namespace client.User_controls
                 {
                     txtShortcutName.Text = Path.GetFileNameWithoutExtension(Shortcut.FilePath);
                 }
-            } else
+            }
+            else
             {
                 txtShortcutName.Text = Shortcut.name;
             }
@@ -60,9 +61,7 @@ namespace client.User_controls
             {
                 cmdNumDown.Enabled = false;
                 cmdNumDown.BackgroundImage = global::client.Properties.Resources.NumDownGray;
-
             }
-
         }
 
         private void ucProgramShortcut_MouseEnter(object sender, EventArgs e)
@@ -81,13 +80,11 @@ namespace client.User_controls
         private void cmdNumUp_Click(object sender, EventArgs e)
         {
             MotherForm.Swap(MotherForm.Category.ShortcutList, Position, Position - 1);
-
         }
 
         private void cmdNumDown_Click(object sender, EventArgs e)
         {
             MotherForm.Swap(MotherForm.Category.ShortcutList, Position, Position + 1);
-
         }
 
         private void cmdDelete_Click(object sender, EventArgs e)
@@ -95,25 +92,20 @@ namespace client.User_controls
             MotherForm.DeleteShortcut(Shortcut);
         }
 
-        // Handle what is selected/deselected when a shortcut is clicked on
-        // If current item is already selected, then deselect everything
         private void ucProgramShortcut_Click(object sender, EventArgs e)
         {
             if (MotherForm.selectedShortcut == this)
             {
                 MotherForm.resetSelection();
-                //IsSelected = false;
             }
             else
             {
                 if (MotherForm.selectedShortcut != null)
                 {
                     MotherForm.resetSelection();
-                    //IsSelected = false;
                 }
 
                 MotherForm.enableSelection(this);
-                //IsSelected = true;
             }
         }
 
@@ -122,7 +114,7 @@ namespace client.User_controls
             txtShortcutName.DeselectAll();
             txtShortcutName.Enabled = false;
             txtShortcutName.Enabled = true;
-            txtShortcutName.TabStop = false; // Deselecting textbox text
+            txtShortcutName.TabStop = false;
 
             this.BackColor = Color.FromArgb(31, 31, 31);
             txtShortcutName.BackColor = Color.FromArgb(31, 31, 31);
@@ -132,12 +124,10 @@ namespace client.User_controls
 
         public void ucSelected()
         {
-
             this.BackColor = Color.FromArgb(26, 26, 26);
             txtShortcutName.BackColor = Color.FromArgb(26, 26, 26);
             cmdNumUp.BackColor = Color.FromArgb(26, 26, 26);
             cmdNumDown.BackColor = Color.FromArgb(26, 26, 26);
-
         }
 
         private void lbTextbox_TextChanged(object sender, EventArgs e)
@@ -148,13 +138,11 @@ namespace client.User_controls
             Shortcut.name = txtShortcutName.Text;
         }
 
-        private void ucProgramShortcut_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
+        private void ucProgramShortcut_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
                 picShortcut.Focus();
-
-
                 e.Handled = true;
                 e.SuppressKeyPress = true;
             }
@@ -162,94 +150,13 @@ namespace client.User_controls
 
         private void txtShortcutName_Click(object sender, EventArgs e)
         {
-            
             if (!IsSelected)
                 ucProgramShortcut_Click(sender, e);
         }
 
-        private void ucProgramShortcut_Enter(object sender, EventArgs e)
-        {
-            //IsSelected = true;
-        }
-
-        private void ucProgramShortcut_Leave(object sender, EventArgs e)
-        {
-            //IsSelected = false;
-        }
-
-        // Helper method to load custom icon from path
-        private Bitmap LoadCustomIcon(string customPath)
-        {
-            try
-            {
-                string absolutePath = GetAbsoluteIconPath(customPath);
-                if (File.Exists(absolutePath))
-                {
-                    // Load image directly from file - this creates a new Bitmap that owns its data
-                    // and doesn't depend on an external stream
-                    return new Bitmap(absolutePath);
-                }
-            }
-            catch (Exception)
-            {
-                // Return null on error, will fall back to default icon
-            }
-            return null;
-        }
-
-        // Helper method to convert relative paths to absolute
-        private string GetAbsoluteIconPath(string customPath)
-        {
-            if (Path.IsPathRooted(customPath))
-            {
-                return customPath;
-            }
-            else
-            {
-                // Relative path - construct absolute path from config directory
-                return Path.Combine(MainPath.path, "config", MotherForm.Category.Name, customPath);
-            }
-        }
-
-        // Extract method for original icon loading behavior
-        private void LoadDefaultIcon()
-        {
-            if (Shortcut.isWindowsApp)
-            {
-                picShortcut.BackgroundImage = handleWindowsApp.getWindowsAppIcon(Shortcut.FilePath, true);
-            }
-            else if (File.Exists(Shortcut.FilePath)) // Checks if the shortcut actually exists; if not then display an error image
-            {
-                String imageExtension = Path.GetExtension(Shortcut.FilePath).ToLower();
-
-                // Start checking if the extension is an lnk (shortcut) file
-                // Depending on the extension, the icon can be directly extracted or it has to be gotten through other methods as to not get the shortcut arrow
-                if (imageExtension == ".lnk")
-                {
-                    picShortcut.BackgroundImage = logo = frmGroup.handleLnkExt(Shortcut.FilePath);
-                }
-                else
-                {
-                    picShortcut.BackgroundImage = logo = Icon.ExtractAssociatedIcon(Shortcut.FilePath).ToBitmap();
-                }
-
-            }
-            else if (Directory.Exists(Shortcut.FilePath))
-            {
-                try
-                {
-                    picShortcut.BackgroundImage = logo = handleFolder.GetFolderIcon(Shortcut.FilePath).ToBitmap();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message);
-                }
-            }
-            else
-            {
-                picShortcut.BackgroundImage = logo = global::client.Properties.Resources.Error;
-            }
-        }
+        // -----------------------------------------
+        // ICON LOADING (CUSTOM + DEFAULT)
+        // -----------------------------------------
 
         // Public method to refresh icon display on-demand
         public void RefreshIcon()
@@ -257,28 +164,125 @@ namespace client.User_controls
             LoadIconImage();
         }
 
-        // Helper method to load icon (custom or default)
-        private void LoadIconImage()
+        // Helper: convert relative paths to absolute (config/<GroupName>/...)
+        private string GetAbsoluteIconPath(string customPath)
         {
-            if (!string.IsNullOrEmpty(Shortcut.CustomIconPath))
+            if (string.IsNullOrWhiteSpace(customPath))
+                return string.Empty;
+
+            if (Path.IsPathRooted(customPath))
+                return customPath;
+
+            return Path.Combine(MainPath.path, "config", MotherForm.Category.Name, customPath);
+        }
+
+        // Helper: load image from disk WITHOUT locking file
+        private static Bitmap LoadBitmapNoLock(string absolutePath)
+        {
+            using (var ms = new MemoryStream(File.ReadAllBytes(absolutePath)))
+            using (var img = Image.FromStream(ms))
             {
-                Bitmap customIcon = LoadCustomIcon(Shortcut.CustomIconPath);
-                if (customIcon != null)
-                {
-                    picShortcut.BackgroundImage = logo = customIcon;
-                }
-                else
-                {
-                    // Custom icon path set but file missing, fall back to default
-                    LoadDefaultIcon();
-                }
-            }
-            else
-            {
-                // No custom icon, load default
-                LoadDefaultIcon();
+                return new Bitmap(img);
             }
         }
 
+        // Helper: safely replace current logo/background image and dispose old logo if owned
+        private void SetIconBitmap(Bitmap newBmp)
+        {
+            // Dispose previous logo if it exists and is not the error resource
+            if (logo != null)
+            {
+                try { logo.Dispose(); } catch { }
+                logo = null;
+            }
+
+            logo = newBmp;
+            picShortcut.BackgroundImage = logo;
+        }
+
+        // Load custom icon from CustomIconPath if available; returns null if missing/invalid
+        private Bitmap LoadCustomIcon(string customPath)
+        {
+            try
+            {
+                string absolutePath = GetAbsoluteIconPath(customPath);
+                if (!string.IsNullOrEmpty(absolutePath) && File.Exists(absolutePath))
+                {
+                    return LoadBitmapNoLock(absolutePath);
+                }
+            }
+            catch
+            {
+                // fall back
+            }
+            return null;
+        }
+
+        // Original icon loading behavior (default)
+        private Bitmap BuildDefaultIconBitmap()
+        {
+            if (Shortcut.isWindowsApp)
+            {
+                // handleWindowsApp returns a Bitmap; make a copy to own/dispose safely
+                using (var bmp = handleWindowsApp.getWindowsAppIcon(Shortcut.FilePath, true))
+                {
+                    return new Bitmap(bmp);
+                }
+            }
+
+            if (File.Exists(Shortcut.FilePath))
+            {
+                string imageExtension = Path.GetExtension(Shortcut.FilePath).ToLower();
+
+                if (imageExtension == ".lnk")
+                {
+                    using (var bmp = frmGroup.handleLnkExt(Shortcut.FilePath))
+                    {
+                        return new Bitmap(bmp);
+                    }
+                }
+
+                using (var bmp = Icon.ExtractAssociatedIcon(Shortcut.FilePath).ToBitmap())
+                {
+                    return new Bitmap(bmp);
+                }
+            }
+
+            if (Directory.Exists(Shortcut.FilePath))
+            {
+                try
+                {
+                    using (var bmp = handleFolder.GetFolderIcon(Shortcut.FilePath).ToBitmap())
+                    {
+                        return new Bitmap(bmp);
+                    }
+                }
+                catch
+                {
+                    // fall through
+                }
+            }
+
+            // Error icon: clone the resource to own/dispose safely
+            return new Bitmap(global::client.Properties.Resources.Error);
+        }
+
+        // Main entry: load icon (custom if possible, else default)
+        private void LoadIconImage()
+        {
+            // Try custom first
+            if (!string.IsNullOrEmpty(Shortcut.CustomIconPath))
+            {
+                Bitmap custom = LoadCustomIcon(Shortcut.CustomIconPath);
+                if (custom != null)
+                {
+                    SetIconBitmap(custom);
+                    return;
+                }
+            }
+
+            // Default
+            SetIconBitmap(BuildDefaultIconBitmap());
+        }
     }
 }
