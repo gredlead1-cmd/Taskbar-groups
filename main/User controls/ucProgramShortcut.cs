@@ -48,40 +48,8 @@ namespace client.User_controls
             txtShortcutName.Width = size.Width;
             txtShortcutName.Height = size.Height;
 
-
-            if (Shortcut.isWindowsApp)
-            {
-                picShortcut.BackgroundImage = handleWindowsApp.getWindowsAppIcon(Shortcut.FilePath, true);
-            }
-            else if (File.Exists(Shortcut.FilePath)) // Checks if the shortcut actually exists; if not then display an error image
-            {
-                String imageExtension = Path.GetExtension(Shortcut.FilePath).ToLower();
-
-                // Start checking if the extension is an lnk (shortcut) file
-                // Depending on the extension, the icon can be directly extracted or it has to be gotten through other methods as to not get the shortcut arrow
-                if (imageExtension == ".lnk")
-                {
-                    picShortcut.BackgroundImage = logo = frmGroup.handleLnkExt(Shortcut.FilePath);
-                }
-                else
-                {
-                    picShortcut.BackgroundImage = logo = Icon.ExtractAssociatedIcon(Shortcut.FilePath).ToBitmap();
-                }
-
-            } else if (Directory.Exists(Shortcut.FilePath))
-            {
-                try
-                {
-                    picShortcut.BackgroundImage = logo = handleFolder.GetFolderIcon(Shortcut.FilePath).ToBitmap();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message);
-                }
-            } else
-            {
-                picShortcut.BackgroundImage = logo = global::client.Properties.Resources.Error;
-            }
+            // Load icon (custom or default)
+            LoadIconImage();
 
             if (Position == 0)
             {
@@ -207,6 +175,109 @@ namespace client.User_controls
         private void ucProgramShortcut_Leave(object sender, EventArgs e)
         {
             //IsSelected = false;
+        }
+
+        // Helper method to load custom icon from path
+        private Bitmap LoadCustomIcon(string customPath)
+        {
+            try
+            {
+                string absolutePath = GetAbsoluteIconPath(customPath);
+                if (File.Exists(absolutePath))
+                {
+                    // Load image directly from file - this creates a new Bitmap that owns its data
+                    // and doesn't depend on an external stream
+                    return new Bitmap(absolutePath);
+                }
+            }
+            catch (Exception)
+            {
+                // Return null on error, will fall back to default icon
+            }
+            return null;
+        }
+
+        // Helper method to convert relative paths to absolute
+        private string GetAbsoluteIconPath(string customPath)
+        {
+            if (Path.IsPathRooted(customPath))
+            {
+                return customPath;
+            }
+            else
+            {
+                // Relative path - construct absolute path from config directory
+                return Path.Combine(MainPath.path, "config", MotherForm.Category.Name, customPath);
+            }
+        }
+
+        // Extract method for original icon loading behavior
+        private void LoadDefaultIcon()
+        {
+            if (Shortcut.isWindowsApp)
+            {
+                picShortcut.BackgroundImage = handleWindowsApp.getWindowsAppIcon(Shortcut.FilePath, true);
+            }
+            else if (File.Exists(Shortcut.FilePath)) // Checks if the shortcut actually exists; if not then display an error image
+            {
+                String imageExtension = Path.GetExtension(Shortcut.FilePath).ToLower();
+
+                // Start checking if the extension is an lnk (shortcut) file
+                // Depending on the extension, the icon can be directly extracted or it has to be gotten through other methods as to not get the shortcut arrow
+                if (imageExtension == ".lnk")
+                {
+                    picShortcut.BackgroundImage = logo = frmGroup.handleLnkExt(Shortcut.FilePath);
+                }
+                else
+                {
+                    picShortcut.BackgroundImage = logo = Icon.ExtractAssociatedIcon(Shortcut.FilePath).ToBitmap();
+                }
+
+            }
+            else if (Directory.Exists(Shortcut.FilePath))
+            {
+                try
+                {
+                    picShortcut.BackgroundImage = logo = handleFolder.GetFolderIcon(Shortcut.FilePath).ToBitmap();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+            }
+            else
+            {
+                picShortcut.BackgroundImage = logo = global::client.Properties.Resources.Error;
+            }
+        }
+
+        // Public method to refresh icon display on-demand
+        public void RefreshIcon()
+        {
+            LoadIconImage();
+        }
+
+        // Helper method to load icon (custom or default)
+        private void LoadIconImage()
+        {
+            if (!string.IsNullOrEmpty(Shortcut.CustomIconPath))
+            {
+                Bitmap customIcon = LoadCustomIcon(Shortcut.CustomIconPath);
+                if (customIcon != null)
+                {
+                    picShortcut.BackgroundImage = logo = customIcon;
+                }
+                else
+                {
+                    // Custom icon path set but file missing, fall back to default
+                    LoadDefaultIcon();
+                }
+            }
+            else
+            {
+                // No custom icon, load default
+                LoadDefaultIcon();
+            }
         }
 
     }

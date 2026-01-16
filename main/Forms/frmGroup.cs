@@ -766,6 +766,7 @@ namespace client.Forms
             {
                 pnlColor.Visible = true;
                 pnlArguments.Visible = false;
+                pnlCustomIcon.Visible = false;
                 selectedShortcut.ucDeselected();
                 selectedShortcut.IsSelected = false;
                 selectedShortcut = null;
@@ -789,6 +790,8 @@ namespace client.Forms
 
             pnlColor.Visible = false;
             pnlArguments.Visible = true;
+            pnlCustomIcon.Visible = true;
+            UpdateCustomIconPreview();
         }
 
         // Set the argument property to whatever the user set
@@ -864,6 +867,128 @@ namespace client.Forms
         private void frmGroup_MouseClick(object sender, MouseEventArgs e)
         {
             resetSelection();
+        }
+
+        //--------------------------------------
+        // CUSTOM ICON MANAGEMENT
+        //--------------------------------------
+
+        private void cmdChangeIcon_Click(object sender, EventArgs e)
+        {
+            if (selectedShortcut == null) return;
+
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
+                Title = "Select Custom Icon",
+                CheckFileExists = true,
+                CheckPathExists = true,
+                DefaultExt = "png",
+                Filter = "Image files (*.png, *.jpg, *.jpeg, *.ico, *.bmp) | *.png; *.jpg; *.jpeg; *.ico; *.bmp",
+                RestoreDirectory = true,
+                ReadOnlyChecked = true
+            };
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    // Create CustomIcons directory if it doesn't exist
+                    string customIconsPath = Path.Combine(MainPath.path, "config", Category.Name, "CustomIcons");
+                    if (!Directory.Exists(customIconsPath))
+                    {
+                        Directory.CreateDirectory(customIconsPath);
+                    }
+
+                    // Generate filename with special characters removed
+                    Regex specialCharRegex = new Regex("[*'\",_&#^@]");
+                    string cleanFileName = specialCharRegex.Replace(Path.GetFileNameWithoutExtension(openFileDialog.FileName), string.Empty);
+                    string targetFileName = cleanFileName + "_custom.png";
+                    string targetPath = Path.Combine(customIconsPath, targetFileName);
+
+                    // Load and resize the image to 256x256 PNG
+                    using (Image originalImage = Image.FromFile(openFileDialog.FileName))
+                    {
+                        using (Image resizedImage = ImageFunctions.ResizeImage(originalImage, 256, 256))
+                        {
+                            resizedImage.Save(targetPath, System.Drawing.Imaging.ImageFormat.Png);
+                        }
+                    }
+
+                    // Store relative path in the shortcut
+                    string relativePath = Path.Combine("CustomIcons", targetFileName);
+                    Category.ShortcutList[selectedShortcut.Position].CustomIconPath = relativePath;
+
+                    // Refresh the icon display
+                    selectedShortcut.RefreshIcon();
+
+                    // Update the preview
+                    UpdateCustomIconPreview();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error setting custom icon: " + ex.Message);
+                }
+            }
+        }
+
+        private void cmdRemoveIcon_Click(object sender, EventArgs e)
+        {
+            if (selectedShortcut == null) return;
+
+            // Clear the custom icon path
+            Category.ShortcutList[selectedShortcut.Position].CustomIconPath = "";
+
+            // Refresh to revert to default icon
+            selectedShortcut.RefreshIcon();
+
+            // Update the preview
+            UpdateCustomIconPreview();
+        }
+
+        private void UpdateCustomIconPreview()
+        {
+            if (selectedShortcut == null) return;
+
+            ProgramShortcut shortcut = Category.ShortcutList[selectedShortcut.Position];
+
+            // Dispose old image to prevent memory leaks
+            if (picCustomIconPreview.Image != null)
+            {
+                picCustomIconPreview.Image.Dispose();
+                picCustomIconPreview.Image = null;
+            }
+
+            if (!string.IsNullOrEmpty(shortcut.CustomIconPath))
+            {
+                try
+                {
+                    string absolutePath = Path.Combine(MainPath.path, "config", Category.Name, shortcut.CustomIconPath);
+                    if (File.Exists(absolutePath))
+                    {
+                        // Load image directly from file to avoid stream disposal issues
+                        picCustomIconPreview.Image = new Bitmap(absolutePath);
+                        cmdRemoveIcon.Enabled = true;
+                    }
+                    else
+                    {
+                        // File doesn't exist, show default icon
+                        picCustomIconPreview.Image = selectedShortcut.logo;
+                        cmdRemoveIcon.Enabled = false;
+                    }
+                }
+                catch
+                {
+                    picCustomIconPreview.Image = selectedShortcut.logo;
+                    cmdRemoveIcon.Enabled = false;
+                }
+            }
+            else
+            {
+                // No custom icon, show default
+                picCustomIconPreview.Image = selectedShortcut.logo;
+                cmdRemoveIcon.Enabled = false;
+            }
         }
     }
 }
