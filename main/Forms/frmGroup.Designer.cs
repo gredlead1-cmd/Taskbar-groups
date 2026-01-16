@@ -73,6 +73,11 @@
             this.pnlWorkingDirectory = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.pnlArgumentTextbox = new System.Windows.Forms.TextBox();
+            this.pnlCustomIcon = new System.Windows.Forms.Panel();
+            this.lblCustomIconTitle = new System.Windows.Forms.Label();
+            this.cmdChangeIcon = new System.Windows.Forms.Button();
+            this.cmdRemoveIcon = new System.Windows.Forms.Button();
+            this.picCustomIconPreview = new System.Windows.Forms.PictureBox();
             this.pnlGroupIcon.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.cmdAddGroupIcon)).BeginInit();
             this.pnlAddShortcut.SuspendLayout();
@@ -80,6 +85,8 @@
             this.pnlColor.SuspendLayout();
             this.pnlEnd.SuspendLayout();
             this.pnlArguments.SuspendLayout();
+            this.pnlCustomIcon.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.picCustomIconPreview)).BeginInit();
             this.SuspendLayout();
             // 
             // lblWith
@@ -544,6 +551,69 @@
             this.cmdWidthUp.UseVisualStyleBackColor = false;
             this.cmdWidthUp.Click += new System.EventHandler(this.cmdWidthUp_Click);
             // 
+            // pnlCustomIcon
+            // 
+            this.pnlCustomIcon.Controls.Add(this.picCustomIconPreview);
+            this.pnlCustomIcon.Controls.Add(this.cmdRemoveIcon);
+            this.pnlCustomIcon.Controls.Add(this.cmdChangeIcon);
+            this.pnlCustomIcon.Controls.Add(this.lblCustomIconTitle);
+            this.pnlCustomIcon.Location = new System.Drawing.Point(45, 684);
+            this.pnlCustomIcon.Name = "pnlCustomIcon";
+            this.pnlCustomIcon.Size = new System.Drawing.Size(482, 85);
+            this.pnlCustomIcon.TabIndex = 49;
+            this.pnlCustomIcon.Visible = false;
+            // 
+            // lblCustomIconTitle
+            // 
+            this.lblCustomIconTitle.AutoSize = true;
+            this.lblCustomIconTitle.Font = new System.Drawing.Font("Segoe UI", 11.25F);
+            this.lblCustomIconTitle.ForeColor = System.Drawing.Color.White;
+            this.lblCustomIconTitle.Location = new System.Drawing.Point(23, 11);
+            this.lblCustomIconTitle.Name = "lblCustomIconTitle";
+            this.lblCustomIconTitle.Size = new System.Drawing.Size(95, 20);
+            this.lblCustomIconTitle.TabIndex = 0;
+            this.lblCustomIconTitle.Text = "Custom Icon:";
+            // 
+            // cmdChangeIcon
+            // 
+            this.cmdChangeIcon.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(76)))), ((int)(((byte)(76)))), ((int)(((byte)(76)))));
+            this.cmdChangeIcon.FlatAppearance.BorderSize = 0;
+            this.cmdChangeIcon.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.cmdChangeIcon.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.cmdChangeIcon.ForeColor = System.Drawing.Color.White;
+            this.cmdChangeIcon.Location = new System.Drawing.Point(27, 44);
+            this.cmdChangeIcon.Name = "cmdChangeIcon";
+            this.cmdChangeIcon.Size = new System.Drawing.Size(100, 30);
+            this.cmdChangeIcon.TabIndex = 1;
+            this.cmdChangeIcon.Text = "Change Icon";
+            this.cmdChangeIcon.UseVisualStyleBackColor = false;
+            this.cmdChangeIcon.Click += new System.EventHandler(this.cmdChangeIcon_Click);
+            // 
+            // cmdRemoveIcon
+            // 
+            this.cmdRemoveIcon.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(76)))), ((int)(((byte)(76)))), ((int)(((byte)(76)))));
+            this.cmdRemoveIcon.FlatAppearance.BorderSize = 0;
+            this.cmdRemoveIcon.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.cmdRemoveIcon.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.cmdRemoveIcon.ForeColor = System.Drawing.Color.White;
+            this.cmdRemoveIcon.Location = new System.Drawing.Point(133, 44);
+            this.cmdRemoveIcon.Name = "cmdRemoveIcon";
+            this.cmdRemoveIcon.Size = new System.Drawing.Size(100, 30);
+            this.cmdRemoveIcon.TabIndex = 2;
+            this.cmdRemoveIcon.Text = "Remove Icon";
+            this.cmdRemoveIcon.UseVisualStyleBackColor = false;
+            this.cmdRemoveIcon.Click += new System.EventHandler(this.cmdRemoveIcon_Click);
+            // 
+            // picCustomIconPreview
+            // 
+            this.picCustomIconPreview.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.picCustomIconPreview.Location = new System.Drawing.Point(400, 11);
+            this.picCustomIconPreview.Name = "picCustomIconPreview";
+            this.picCustomIconPreview.Size = new System.Drawing.Size(64, 64);
+            this.picCustomIconPreview.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.picCustomIconPreview.TabIndex = 3;
+            this.picCustomIconPreview.TabStop = false;
+            // 
             // pnlArguments
             // 
             this.pnlArguments.Controls.Add(this.label7);
@@ -650,6 +720,7 @@
             this.AutoScroll = true;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31)))));
             this.ClientSize = new System.Drawing.Size(589, 821);
+            this.Controls.Add(this.pnlCustomIcon);
             this.Controls.Add(this.pnlArguments);
             this.Controls.Add(this.pnlEnd);
             this.Controls.Add(this.pnlAddShortcut);
@@ -683,6 +754,9 @@
             this.pnlEnd.ResumeLayout(false);
             this.pnlArguments.ResumeLayout(false);
             this.pnlArguments.PerformLayout();
+            this.pnlCustomIcon.ResumeLayout(false);
+            this.pnlCustomIcon.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.picCustomIconPreview)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -734,5 +808,10 @@
         private System.Windows.Forms.Button cmdSelectDirectory;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Panel pnlCustomIcon;
+        private System.Windows.Forms.Label lblCustomIconTitle;
+        private System.Windows.Forms.Button cmdChangeIcon;
+        private System.Windows.Forms.Button cmdRemoveIcon;
+        private System.Windows.Forms.PictureBox picCustomIconPreview;
     }
 }

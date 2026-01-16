@@ -212,6 +212,24 @@ namespace client.Classes
 
             String programPath = shortcutObject.FilePath;
 
+            // First check if shortcut has a CustomIconPath
+            if (!string.IsNullOrEmpty(shortcutObject.CustomIconPath))
+            {
+                try
+                {
+                    string customIconAbsolutePath = Path.Combine(MainPath.path, "config", this.Name, shortcutObject.CustomIconPath);
+                    if (System.IO.File.Exists(customIconAbsolutePath))
+                    {
+                        using (MemoryStream ms = new MemoryStream(System.IO.File.ReadAllBytes(customIconAbsolutePath)))
+                            return Image.FromStream(ms);
+                    }
+                }
+                catch (Exception)
+                {
+                    // Fall through to default icon loading if custom icon fails
+                }
+            }
+
             if (System.IO.File.Exists(programPath) || Directory.Exists(programPath) || shortcutObject.isWindowsApp)
             {
                 try
@@ -221,7 +239,7 @@ namespace client.Classes
                     // If not then it would throw an exception in which the below code would catch it
                     String cacheImagePath = @Path.GetDirectoryName(Application.ExecutablePath) + 
                         @"\config\" + this.Name + @"\Icons\" + ((shortcutObject.isWindowsApp) ? specialCharRegex.Replace(programPath, string.Empty) : 
-                        @Path.GetFileNameWithoutExtension(programPath)) + (Directory.Exists(programPath)? "_FolderObjTSKGRoup.jpg" : ".png");
+                        @Path.GetFileNameWithoutExtension(programPath)) + (Directory.Exists(programPath)? "_FolderObjTSKGRoup.png" : ".png");
 
                     using (MemoryStream ms = new MemoryStream(System.IO.File.ReadAllBytes(cacheImagePath)))
                         return Image.FromStream(ms);
