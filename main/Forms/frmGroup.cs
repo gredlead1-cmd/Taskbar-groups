@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 using System.Transactions;
 using System.Windows.Forms;
 using Microsoft.WindowsAPICodePack.Shell;
-using Microsoft.WindowsAPICodePack.Dialogs; 
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace client.Forms
 {
@@ -77,12 +77,12 @@ namespace client.Forms
             cmdAddGroupIcon.BackgroundImage = Category.LoadIconImage();
             lblNum.Text = Category.Width.ToString();
             lblOpacity.Text = Category.Opacity.ToString();
-           
+
             if (Category.ColorString == null)  // Handles if groups is created from earlier releas w/o ColorString property
                 Category.ColorString = System.Drawing.ColorTranslator.ToHtml(Color.FromArgb(31, 31, 31));
 
             Color categoryColor = ImageFunctions.FromString(Category.ColorString);
-            
+
             if (categoryColor == Color.FromArgb(31, 31, 31))
                 radioDark.Checked = true;
             else if (categoryColor == Color.FromArgb(230, 230, 230))
@@ -133,7 +133,7 @@ namespace client.Forms
                 pnlShortcuts.Height += 50;
                 pnlAddShortcut.Top += 50;
             }
-            ucPsc.Location = new Point(25, (pnlShortcuts.Controls.Count * 50)-50);
+            ucPsc.Location = new Point(25, (pnlShortcuts.Controls.Count * 50) - 50);
             pnlShortcuts.AutoScroll = true;
 
         }
@@ -165,7 +165,7 @@ namespace client.Forms
                 RestoreDirectory = true,
                 ReadOnlyChecked = true,
                 DereferenceLinks = false
-             };
+            };
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
@@ -195,7 +195,8 @@ namespace client.Forms
                 {
                     addShortcut(item.ParsingName, true);
                 }
-            } else
+            }
+            else
             {
                 // Loops through each file to make sure they exist and to add them directly to the shortcut list
                 foreach (var file in files)
@@ -211,7 +212,7 @@ namespace client.Forms
             {
                 pnlShortcuts.ScrollControlIntoView(pnlShortcuts.Controls[0]);
             }
-            
+
             resetSelection();
         }
 
@@ -233,7 +234,6 @@ namespace client.Forms
             Category.ShortcutList.Remove(psc);
             resetSelection();
             bool before = true;
-            //int i = 0;
 
             foreach (ucProgramShortcut ucPsc in pnlShortcuts.Controls)
             {
@@ -244,8 +244,6 @@ namespace client.Forms
                 }
                 if (ucPsc.Shortcut == psc)
                 {
-                    //i = pnlShortcuts.Controls.IndexOf(ucPsc);
-
                     int controlIndex = pnlShortcuts.Controls.IndexOf(ucPsc);
 
                     pnlShortcuts.Controls.Remove(ucPsc);
@@ -255,7 +253,8 @@ namespace client.Forms
                         try
                         {
                             pnlShortcuts.ScrollControlIntoView(pnlShortcuts.Controls[controlIndex]);
-                        } catch
+                        }
+                        catch
                         {
                             if (pnlShortcuts.Controls.Count != 0)
                             {
@@ -323,7 +322,7 @@ namespace client.Forms
                 RestoreDirectory = true,
                 ReadOnlyChecked = true,
                 DereferenceLinks = false,
-        };
+            };
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
@@ -385,7 +384,8 @@ namespace client.Forms
             else if (icLocation[0] == "" && lnkIcon.TargetPath == "")
             {
                 return handleWindowsApp.getWindowsAppIcon(file);
-            } else
+            }
+            else
             {
                 return Icon.ExtractAssociatedIcon(Path.GetFullPath(Environment.ExpandEnvironmentVariables(lnkIcon.TargetPath))).ToBitmap();
             }
@@ -435,8 +435,8 @@ namespace client.Forms
 
             if (e.Data.GetDataPresent("Shell IDList Array"))
             {
-                 e.Effect = e.AllowedEffect;
-                 return true;
+                e.Effect = e.AllowedEffect;
+                return true;
             }
 
 
@@ -479,8 +479,6 @@ namespace client.Forms
         {
             resetSelection();
 
-            //List <Directory> directories = 
-
             if (txtGroupName.Text == "Name the new group...") // Verify category name
             {
                 lblErrorTitle.Text = "Must select a name";
@@ -513,7 +511,7 @@ namespace client.Forms
                 try
                 {
 
-                    foreach(ProgramShortcut shortcutModifiedItem in shortcutChanged)
+                    foreach (ProgramShortcut shortcutModifiedItem in shortcutChanged)
                     {
                         if (!Directory.Exists(shortcutModifiedItem.WorkingDirectory))
                         {
@@ -539,7 +537,8 @@ namespace client.Forms
                                 fm.Delete(shortcutPath);
                                 scope1.Complete();
                             }
-                        } catch (Exception)
+                        }
+                        catch (Exception)
                         {
                             MessageBox.Show("Please close all programs used within the taskbar group in order to save!");
                             return;
@@ -548,18 +547,14 @@ namespace client.Forms
                     //
                     // Creating new config
                     //
-                    //int width = int.Parse(lblNum.Text);
-
                     Category.Width = int.Parse(lblNum.Text);
-
-                    //Category category = new Category(txtGroupName.Text, Category.ShortcutList, width, System.Drawing.ColorTranslator.ToHtml(CategoryColor), Category.Opacity); // Instantiate category
 
                     // Normalize string so it can be used in path; remove spaces
                     Category.Name = Regex.Replace(txtGroupName.Text, @"\s+", "_");
 
                     Category.CreateConfig(cmdAddGroupIcon.BackgroundImage); // Creating group config files
                     Client.LoadCategory(Path.GetFullPath(@"config\" + Category.Name)); // Loading visuals
-                    
+
                     this.Dispose();
                     Client.Reload();
                 }
@@ -582,8 +577,6 @@ namespace client.Forms
             {
                 string configPath = @MainPath.path + @"\config\" + Category.Name;
                 string shortcutPath = @MainPath.path + @"\Shortcuts\" + Regex.Replace(Category.Name, @"(_)+", " ") + ".lnk";
-
-                var dir = new DirectoryInfo(configPath);
 
                 try
                 {
@@ -807,7 +800,6 @@ namespace client.Forms
             {
                 lblAddGroupIcon.Focus();
 
-
                 e.Handled = true;
                 e.SuppressKeyPress = true;
             }
@@ -847,7 +839,8 @@ namespace client.Forms
 
         private String getProperDirectory(String file)
         {
-            try {
+            try
+            {
                 if (Path.GetExtension(file).ToLower() == ".lnk")
                 {
                     IWshShortcut extension = (IWshShortcut)new WshShell().CreateShortcut(file);
@@ -858,7 +851,8 @@ namespace client.Forms
                 {
                     return Path.GetDirectoryName(file);
                 }
-            } catch (Exception)
+            }
+            catch (Exception)
             {
                 return MainPath.exeString;
             }
@@ -900,19 +894,18 @@ namespace client.Forms
                         Directory.CreateDirectory(customIconsPath);
                     }
 
-                    // Generate filename with special characters removed
+                    // Generate filename with special characters removed + include shortcut position to avoid collisions
                     Regex specialCharRegex = new Regex("[*'\",_&#^@]");
                     string cleanFileName = specialCharRegex.Replace(Path.GetFileNameWithoutExtension(openFileDialog.FileName), string.Empty);
-                    string targetFileName = cleanFileName + "_custom.png";
+                    string targetFileName = $"{cleanFileName}_{selectedShortcut.Position}_custom.png";
                     string targetPath = Path.Combine(customIconsPath, targetFileName);
 
-                    // Load and resize the image to 256x256 PNG
-                    using (Image originalImage = Image.FromFile(openFileDialog.FileName))
+                    // Load without locking the source file, resize to 256x256, save as PNG
+                    using (var srcMs = new MemoryStream(File.ReadAllBytes(openFileDialog.FileName)))
+                    using (Image originalImage = Image.FromStream(srcMs))
+                    using (Image resizedImage = ImageFunctions.ResizeImage(originalImage, 256, 256))
                     {
-                        using (Image resizedImage = ImageFunctions.ResizeImage(originalImage, 256, 256))
-                        {
-                            resizedImage.Save(targetPath, System.Drawing.Imaging.ImageFormat.Png);
-                        }
+                        resizedImage.Save(targetPath, System.Drawing.Imaging.ImageFormat.Png);
                     }
 
                     // Store relative path in the shortcut
@@ -959,34 +952,57 @@ namespace client.Forms
                 picCustomIconPreview.Image = null;
             }
 
+            // Helper: set preview from an Image safely (clone)
+            void SetPreviewFromImage(Image img, bool enableRemove)
+            {
+                if (img == null)
+                {
+                    picCustomIconPreview.Image = null;
+                    cmdRemoveIcon.Enabled = false;
+                    return;
+                }
+
+                // Clone so we don't share/dispose the same bitmap instance as selectedShortcut.logo
+                picCustomIconPreview.Image = new Bitmap(img);
+                cmdRemoveIcon.Enabled = enableRemove;
+            }
+
             if (!string.IsNullOrEmpty(shortcut.CustomIconPath))
             {
                 try
                 {
-                    string absolutePath = Path.Combine(MainPath.path, "config", Category.Name, shortcut.CustomIconPath);
+                    string p = shortcut.CustomIconPath;
+
+                    // Support both relative (config/<GroupName>/...) and absolute paths
+                    string absolutePath = Path.IsPathRooted(p)
+                        ? p
+                        : Path.Combine(MainPath.path, "config", Category.Name, p);
+
                     if (File.Exists(absolutePath))
                     {
-                        // Load image directly from file to avoid stream disposal issues
-                        picCustomIconPreview.Image = new Bitmap(absolutePath);
-                        cmdRemoveIcon.Enabled = true;
-                    }
-                    else
-                    {
-                        // File doesn't exist, show default icon
-                        picCustomIconPreview.Image = selectedShortcut.logo;
-                        cmdRemoveIcon.Enabled = false;
+                        // Load without locking the file
+                        using (var ms = new MemoryStream(File.ReadAllBytes(absolutePath)))
+                        using (var img = Image.FromStream(ms))
+                        {
+                            SetPreviewFromImage(img, true);
+                        }
+                        return;
                     }
                 }
                 catch
                 {
-                    picCustomIconPreview.Image = selectedShortcut.logo;
-                    cmdRemoveIcon.Enabled = false;
+                    // fall through to default preview
                 }
             }
-            else
+
+            // No custom icon (or missing/failed) => show default icon, remove disabled
+            try
             {
-                // No custom icon, show default
-                picCustomIconPreview.Image = selectedShortcut.logo;
+                SetPreviewFromImage(selectedShortcut.logo, false);
+            }
+            catch
+            {
+                picCustomIconPreview.Image = null;
                 cmdRemoveIcon.Enabled = false;
             }
         }
