@@ -909,8 +909,10 @@ namespace client.Forms
                     // Load and resize the image to 256x256 PNG
                     using (Image originalImage = Image.FromFile(openFileDialog.FileName))
                     {
-                        Image resizedImage = ImageFunctions.ResizeImage(originalImage, 256, 256);
-                        resizedImage.Save(targetPath, System.Drawing.Imaging.ImageFormat.Png);
+                        using (Image resizedImage = ImageFunctions.ResizeImage(originalImage, 256, 256))
+                        {
+                            resizedImage.Save(targetPath, System.Drawing.Imaging.ImageFormat.Png);
+                        }
                     }
 
                     // Store relative path in the shortcut

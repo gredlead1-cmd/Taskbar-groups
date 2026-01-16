@@ -221,7 +221,13 @@ namespace client.Classes
                     if (System.IO.File.Exists(customIconAbsolutePath))
                     {
                         using (MemoryStream ms = new MemoryStream(System.IO.File.ReadAllBytes(customIconAbsolutePath)))
-                            return Image.FromStream(ms);
+                        {
+                            using (Image tempImage = Image.FromStream(ms))
+                            {
+                                // Create a copy to ensure the image remains valid after stream disposal
+                                return new Bitmap(tempImage);
+                            }
+                        }
                     }
                 }
                 catch (Exception)
