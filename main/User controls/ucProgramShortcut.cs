@@ -15,7 +15,7 @@ namespace client.User_controls
         public bool IsSelected = false;
         public int Position { get; set; }
 
-        // Current icon bitmap owned by this control (must be disposed when replaced)
+        // This control owns this bitmap instance (dispose when replacing)
         public Bitmap logo;
 
         public ucProgramShortcut()
@@ -32,13 +32,9 @@ namespace client.User_controls
             else if (Shortcut.name == "")
             {
                 if (File.Exists(Shortcut.FilePath) && Path.GetExtension(Shortcut.FilePath).ToLower() == ".lnk")
-                {
                     txtShortcutName.Text = frmGroup.handleExtName(Shortcut.FilePath);
-                }
                 else
-                {
                     txtShortcutName.Text = Path.GetFileNameWithoutExtension(Shortcut.FilePath);
-                }
             }
             else
             {
@@ -49,7 +45,6 @@ namespace client.User_controls
             txtShortcutName.Width = size.Width;
             txtShortcutName.Height = size.Height;
 
-            // Load icon (custom or default)
             LoadIconImage();
 
             if (Position == 0)
@@ -64,46 +59,30 @@ namespace client.User_controls
             }
         }
 
-        private void ucProgramShortcut_MouseEnter(object sender, EventArgs e)
-        {
-            ucSelected();
-        }
+        private void ucProgramShortcut_MouseEnter(object sender, EventArgs e) => ucSelected();
 
         private void ucProgramShortcut_MouseLeave(object sender, EventArgs e)
         {
             if (MotherForm.selectedShortcut != this)
-            {
                 ucDeselected();
-            }
         }
 
-        private void cmdNumUp_Click(object sender, EventArgs e)
-        {
+        private void cmdNumUp_Click(object sender, EventArgs e) =>
             MotherForm.Swap(MotherForm.Category.ShortcutList, Position, Position - 1);
-        }
 
-        private void cmdNumDown_Click(object sender, EventArgs e)
-        {
+        private void cmdNumDown_Click(object sender, EventArgs e) =>
             MotherForm.Swap(MotherForm.Category.ShortcutList, Position, Position + 1);
-        }
 
-        private void cmdDelete_Click(object sender, EventArgs e)
-        {
-            MotherForm.DeleteShortcut(Shortcut);
-        }
+        private void cmdDelete_Click(object sender, EventArgs e) => MotherForm.DeleteShortcut(Shortcut);
 
         private void ucProgramShortcut_Click(object sender, EventArgs e)
         {
             if (MotherForm.selectedShortcut == this)
-            {
                 MotherForm.resetSelection();
-            }
             else
             {
                 if (MotherForm.selectedShortcut != null)
-                {
                     MotherForm.resetSelection();
-                }
 
                 MotherForm.enableSelection(this);
             }
@@ -154,135 +133,111 @@ namespace client.User_controls
                 ucProgramShortcut_Click(sender, e);
         }
 
-        // -----------------------------------------
-        // ICON LOADING (CUSTOM + DEFAULT)
-        // -----------------------------------------
+        // -----------------------------
+        // ICON LOADING (NO FILE LOCKS)
+        // -----------------------------
 
-        // Public method to refresh icon display on-demand
-        public void RefreshIcon()
-        {
-            LoadIconImage();
-        }
+        public void RefreshIcon() => LoadIconImage();
 
-        // Helper: convert relative paths to absolute (config/<GroupName>/...)
         private string GetAbsoluteIconPath(string customPath)
         {
             if (string.IsNullOrWhiteSpace(customPath))
                 return string.Empty;
 
-            if (Path.IsPathRooted(customPath))
-                return customPath;
-
-            return Path.Combine(MainPath.path, "config", MotherForm.Category.Name, customPath);
+            return Path.IsPathRooted(customPath)
+                ? customPath
+                : Path.Combine(MainPath.path, "config", MotherForm.Category.Name, customPath);
         }
 
-        // Helper: load image from disk WITHOUT locking file
         private static Bitmap LoadBitmapNoLock(string absolutePath)
         {
             using (var ms = new MemoryStream(File.ReadAllBytes(absolutePath)))
             using (var img = Image.FromStream(ms))
-            {
                 return new Bitmap(img);
-            }
         }
 
-        // Helper: safely replace current logo/background image and dispose old logo if owned
-        private void SetIconBitmap(Bitmap newBmp)
+        private void ReplaceLogo(Bitmap newLogo)
         {
-            // Dispose previous logo if it exists and is not the error resource
             if (logo != null)
             {
                 try { logo.Dispose(); } catch { }
                 logo = null;
             }
 
-            logo = newBmp;
+            logo = newLogo;
             picShortcut.BackgroundImage = logo;
         }
 
-        // Load custom icon from CustomIconPath if available; returns null if missing/invalid
         private Bitmap LoadCustomIcon(string customPath)
         {
             try
             {
                 string absolutePath = GetAbsoluteIconPath(customPath);
                 if (!string.IsNullOrEmpty(absolutePath) && File.Exists(absolutePath))
-                {
                     return LoadBitmapNoLock(absolutePath);
-                }
             }
-            catch
-            {
-                // fall back
-            }
+            catch { }
             return null;
         }
 
-        // Original icon loading behavior (default)
-        private Bitmap BuildDefaultIconBitmap()
+        private void LoadDefaultIcon()
         {
+            // Windows Apps
             if (Shortcut.isWindowsApp)
             {
-                // handleWindowsApp returns a Bitmap; make a copy to own/dispose safely
+                // Ensure logo is set (copy/own bitmap)
                 using (var bmp = handleWindowsApp.getWindowsAppIcon(Shortcut.FilePath, true))
-                {
-                    return new Bitmap(bmp);
-                }
+                    ReplaceLogo(new Bitmap(bmp));
+                return;
             }
 
+            // Files
             if (File.Exists(Shortcut.FilePath))
             {
-                string imageExtension = Path.GetExtension(Shortcut.FilePath).ToLower();
+                string ext = Path.GetExtension(Shortcut.FilePath).ToLower();
 
-                if (imageExtension == ".lnk")
+                if (ext == ".lnk")
                 {
                     using (var bmp = frmGroup.handleLnkExt(Shortcut.FilePath))
-                    {
-                        return new Bitmap(bmp);
-                    }
+                        ReplaceLogo(new Bitmap(bmp));
                 }
-
-                using (var bmp = Icon.ExtractAssociatedIcon(Shortcut.FilePath).ToBitmap())
+                else
                 {
-                    return new Bitmap(bmp);
+                    using (var bmp = Icon.ExtractAssociatedIcon(Shortcut.FilePath).ToBitmap())
+                        ReplaceLogo(new Bitmap(bmp));
                 }
+                return;
             }
 
+            // Folders
             if (Directory.Exists(Shortcut.FilePath))
             {
                 try
                 {
                     using (var bmp = handleFolder.GetFolderIcon(Shortcut.FilePath).ToBitmap())
-                    {
-                        return new Bitmap(bmp);
-                    }
+                        ReplaceLogo(new Bitmap(bmp));
+                    return;
                 }
-                catch
-                {
-                    // fall through
-                }
+                catch { }
             }
 
-            // Error icon: clone the resource to own/dispose safely
-            return new Bitmap(global::client.Properties.Resources.Error);
+            // Error fallback (copy resource so we own/dispose safely)
+            ReplaceLogo(new Bitmap(global::client.Properties.Resources.Error));
         }
 
-        // Main entry: load icon (custom if possible, else default)
         private void LoadIconImage()
         {
-            // Try custom first
             if (!string.IsNullOrEmpty(Shortcut.CustomIconPath))
             {
-                Bitmap custom = LoadCustomIcon(Shortcut.CustomIconPath);
+                var custom = LoadCustomIcon(Shortcut.CustomIconPath);
                 if (custom != null)
                 {
-                    SetIconBitmap(custom);
+                    ReplaceLogo(custom);
                     return;
                 }
             }
 
-            // Default
-            SetIconBitmap(BuildDefaultIconBitmap());
+            LoadDefaultIcon();
         }
     }
 }
